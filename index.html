@@ -97,6 +97,25 @@
   .reset-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; font-family: inherit; color: var(--text-secondary); cursor: pointer; transition: background 0.15s, color 0.15s; }
   .reset-btn:hover { background: var(--surface); color: var(--text); }
   .reset-btn:active { transform: scale(0.98); }
+  .row2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+  .row2 .field, .row2 .input-wrap { min-width: 0; }
+  .row2 .input-wrap input { padding: 12px 10px; width: 100%; }
+  .row2 .input-wrap .unit { padding-right: 10px; }
+  .input-wrap input[type="date"] { font-size: 15px; }
+  .add-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .add-btn:active { transform: scale(0.98); }
+  .hint { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+  .hint.err { color: #dc2626; }
+  .periods { display: flex; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px; gap: 3px; margin-bottom: 6px; }
+  .period { flex: 1; border: none; background: none; color: var(--result-accent); font-family: inherit; font-size: 12px; font-weight: 500; padding: 7px 4px; border-radius: 6px; cursor: pointer; }
+  .period.active { background: rgba(255,255,255,0.14); color: var(--result-text); font-weight: 600; }
+  .log-list { display: flex; flex-direction: column; gap: 8px; }
+  .log-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+  .log-item .main { flex: 1; min-width: 0; }
+  .log-item .top { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .log-item .bot { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .del-btn { border: none; background: none; color: var(--text-secondary); font-size: 18px; padding: 6px; cursor: pointer; }
+  .list-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 4px; }
   .hidden { display: none !important; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -111,7 +130,38 @@
   <div class="tabs">
     <button class="tab active" data-tab="cost" id="tab-cost">💰 Вартість заправки</button>
     <button class="tab" data-tab="consumption" id="tab-cons">📊 Витрата палива</button>
+    <button class="tab" data-tab="log" id="tab-log">📒 Журнал</button>
   </div>
+  <div class="card hidden" id="panel-log">
+    <div class="row2">
+      <div class="field"><label data-i18n="lDate">Дата</label><div class="input-wrap"><input type="date" id="l-date"></div></div>
+      <div class="field"><label data-i18n="lOdo">Пробіг (одометр)</label><div class="input-wrap"><input type="number" id="l-odo" inputmode="numeric" step="1" placeholder="184520"><span class="unit">км</span></div></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label data-i18n="lLiters">Залито</label><div class="input-wrap"><input type="number" id="l-liters" inputmode="decimal" step="0.01" placeholder="40"><span class="unit">л</span></div></div>
+      <div class="field"><label data-i18n="lPrice">Ціна</label><div class="input-wrap"><input type="number" id="l-price" inputmode="decimal" step="0.01" placeholder="99.90"><span class="unit">грн/л</span></div></div>
+    </div>
+    <div class="hint" id="l-msg" data-i18n="lHint">Точніше рахує, якщо заправлятися до повного бака.</div>
+    <button class="add-btn" id="l-add" data-i18n="lAdd">+ Додати заправку</button>
+  </div>
+  <div class="result-card hidden" id="result-log">
+    <div class="periods">
+      <button class="period" data-days="7" data-i18n="p7">7 днів</button>
+      <button class="period active" data-days="30" data-i18n="p30">30 днів</button>
+      <button class="period" data-days="0" data-i18n="pAll">Весь час</button>
+    </div>
+    <div class="result-label" data-i18n="lPerKm">Вартість 1 км</div>
+    <div class="result-value empty" id="lg-perkm">— ₴</div>
+    <div class="result-sub" id="lg-sub"></div>
+    <div class="details">
+      <div class="detail-item"><div class="val" id="lg-spent">—</div><div class="lbl" data-i18n="lSpent">витрачено</div></div>
+      <div class="detail-item"><div class="val" id="lg-km">—</div><div class="lbl" data-i18n="lKm">проїхано</div></div>
+      <div class="detail-item"><div class="val" id="lg-cons">—</div><div class="lbl" data-i18n="lCons">л/100 км</div></div>
+      <div class="detail-item"><div class="val" id="lg-avg">—</div><div class="lbl" data-i18n="lAvg">середня ціна</div></div>
+    </div>
+  </div>
+  <div class="list-title hidden" id="lg-title" data-i18n="lHistory">Історія заправок</div>
+  <div class="log-list hidden" id="lg-list"></div>
   <div class="card" id="panel-cost">
     <div class="field"><label><span class="icon">💰</span> Ціна за літр</label><div class="input-wrap"><input type="number" id="c-price" inputmode="decimal" step="0.01" placeholder="57.49"><span class="unit">грн/л</span></div></div>
     <div class="field"><label><span class="icon">🔥</span> Витрата палива</label><div class="input-wrap"><input type="number" id="c-cons" inputmode="decimal" step="0.1" placeholder="7.5"><span class="unit">л/100 км</span></div></div>
@@ -156,6 +206,64 @@ calcCost();calcCons();
 const i18n={ua:{title:'⛽ Калькулятор палива',tabCost:'💰 Вартість заправки',tabCons:'📊 Витрата палива',priceLiter:'Ціна за літр',fuelCons:'Витрата палива',distance:'Відстань',filled:'Залито в бак',pricePerLiter:'Ціна за літр',driven:'Пройдено на цьому баку',costLabel:'Вартість заправки',consLabel:'Витрата палива',spentFuel:'витрачено палива',costPerKm:'вартість за 1 км',totalFuel:'за заправку',reset:'Скинути'},ru:{title:'⛽ Калькулятор топлива',tabCost:'💰 Стоимость заправки',tabCons:'📊 Расход топлива',priceLiter:'Цена за литр',fuelCons:'Расход топлива',distance:'Расстояние',filled:'Залито в бак',pricePerLiter:'Цена за литр',driven:'Пройдено на этом баке',costLabel:'Стоимость заправки',consLabel:'Расход топлива',spentFuel:'потрачено топлива',costPerKm:'стоимость за 1 км',totalFuel:'за заправку',reset:'Сбросить'}};
 let lang='ua';try{lang=localStorage.getItem('fuel-lang')||'ua'}catch(e){}
 function setLang(l){lang=l;try{localStorage.setItem('fuel-lang',l)}catch(e){}const t=i18n[l];$('app-title').textContent=t.title;$('tab-cost').textContent=t.tabCost;$('tab-cons').textContent=t.tabCons;document.querySelector('#panel-cost .field:nth-child(1) label').innerHTML='<span class="icon">💰</span> '+t.priceLiter;document.querySelector('#panel-cost .field:nth-child(2) label').innerHTML='<span class="icon">🔥</span> '+t.fuelCons;document.querySelector('#panel-cost .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.distance;document.querySelector('#panel-cons .field:nth-child(1) label').innerHTML='<span class="icon">⛽</span> '+t.filled;document.querySelector('#panel-cons .field:nth-child(2) label').innerHTML='<span class="icon">💰</span> '+t.pricePerLiter;document.querySelector('#panel-cons .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.driven;document.querySelector('#result-cost .result-label').textContent=t.costLabel;document.querySelector('#result-cons .result-label').textContent=t.consLabel;document.querySelector('#rc-det .detail-item:nth-child(1) .lbl').textContent=t.spentFuel;document.querySelector('#rc-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;document.querySelector('#rr-det .detail-item:nth-child(1) .lbl').textContent=t.totalFuel;document.querySelector('#rr-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;$('reset').textContent=t.reset;$('lang-ru').classList.toggle('active',l==='ru');$('lang-ua').classList.toggle('active',l==='ua')}
+/* ===== Журнал заправок ===== */
+const logI18n={
+ua:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробіг (одометр)',lLiters:'Залито',lPrice:'Ціна',lHint:'Точніше рахує, якщо заправлятися до повного бака.',lAdd:'+ Додати заправку',p7:'7 днів',p30:'30 днів',pAll:'Весь час',lPerKm:'Вартість 1 км',lSpent:'витрачено',lKm:'проїхано',lCons:'л/100 км',lAvg:'середня ціна',lHistory:'Історія заправок',needTwo:'Додайте ще одну заправку — тоді з’явиться вартість 1 км',noData:'Немає заправок за цей період',fills:'заправок',errFill:'Заповніть пробіг, літри і ціну',errOdo:'Пробіг менший, ніж у попередній заправці',del:'Видалити цю заправку?'},
+ru:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробег (одометр)',lLiters:'Залито',lPrice:'Цена',lHint:'Точнее считает, если заправляться до полного бака.',lAdd:'+ Добавить заправку',p7:'7 дней',p30:'30 дней',pAll:'Всё время',lPerKm:'Стоимость 1 км',lSpent:'потрачено',lKm:'проехано',lCons:'л/100 км',lAvg:'средняя цена',lHistory:'История заправок',needTwo:'Добавьте ещё одну заправку — тогда появится стоимость 1 км',noData:'Нет заправок за этот период',fills:'заправок',errFill:'Заполните пробег, литры и цену',errOdo:'Пробег меньше, чем в предыдущей заправке',del:'Удалить эту заправку?'}};
+const LT=k=>logI18n[lang][k];
+let logs=[];try{logs=JSON.parse(localStorage.getItem('fuel-log'))||[]}catch(e){}
+let period=30;try{const p=localStorage.getItem('fuel-period');if(p!==null)period=+p}catch(e){}
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const fmt=(n,d=2)=>n.toLocaleString('uk-UA',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtDate=s=>{const [y,m,d]=s.split('-');return d+'.'+m+'.'+y.slice(2)};
+function saveLogs(){try{localStorage.setItem('fuel-log',JSON.stringify(logs))}catch(e){}}
+function renderLog(){
+  logs.sort((a,b)=>a.odo-b.odo);
+  document.querySelectorAll('.period').forEach(b=>b.classList.toggle('active',+b.dataset.days===period));
+  let list=logs;
+  if(period>0){const from=new Date();from.setDate(from.getDate()-period);const f=from.toISOString().slice(0,10);list=logs.filter(e=>e.date>=f)}
+  const spent=list.reduce((s,e)=>s+e.liters*e.price,0),litAll=list.reduce((s,e)=>s+e.liters,0);
+  $('lg-spent').textContent=list.length?fmt(spent,0)+' ₴':'—';
+  $('lg-avg').textContent=litAll?fmt(spent/litAll)+' ₴':'—';
+  if(list.length>=2){
+    const km=list[list.length-1].odo-list[0].odo,burn=list.slice(1),bl=burn.reduce((s,e)=>s+e.liters,0),bc=burn.reduce((s,e)=>s+e.liters*e.price,0);
+    if(km>0){$('lg-perkm').textContent=fmt(bc/km)+' ₴';$('lg-perkm').classList.remove('empty');$('lg-km').textContent=fmt(km,0)+' км';$('lg-cons').textContent=fmt(bl/km*100,1);$('lg-sub').textContent=LT('fills')+': '+list.length}
+  }else{
+    $('lg-perkm').textContent='— ₴';$('lg-perkm').classList.add('empty');$('lg-km').textContent='—';$('lg-cons').textContent='—';
+    $('lg-sub').textContent=list.length?LT('needTwo'):LT('noData');
+  }
+  const box=$('lg-list');box.innerHTML='';
+  [...logs].reverse().forEach((e,i,arr)=>{
+    const prev=arr[i+1],div=document.createElement('div');div.className='log-item';
+    div.innerHTML='<div class="main"><div class="top">'+fmt(e.liters)+' л × '+fmt(e.price)+' = '+fmt(e.liters*e.price,0)+' ₴</div><div class="bot">'+fmtDate(e.date)+' · '+fmt(e.odo,0)+' км'+(prev?' · +'+fmt(e.odo-prev.odo,0)+' км':'')+'</div></div><button class="del-btn" aria-label="x">✕</button>';
+    div.querySelector('.del-btn').onclick=()=>{if(confirm(LT('del'))){logs=logs.filter(x=>x.id!==e.id);saveLogs();renderLog()}};
+    box.appendChild(div);
+  });
+  $('lg-title').classList.toggle('hidden',mode!=='log'||!logs.length);
+  if(logs.length&&!$('l-price').value)$('l-price').value=logs[logs.length-1].price;
+}
+$('l-date').value=today();
+$('l-add').addEventListener('click',()=>{
+  const odo=parseFloat($('l-odo').value),liters=parseFloat($('l-liters').value),price=parseFloat($('l-price').value),date=$('l-date').value||today();
+  const msg=$('l-msg');
+  if(!(odo>0&&liters>0&&price>0)){msg.textContent=LT('errFill');msg.classList.add('err');return}
+  const last=logs.length?Math.max(...logs.map(e=>e.odo)):0;
+  if(odo<=last&&date>=logs.find(e=>e.odo===last).date){msg.textContent=LT('errOdo');msg.classList.add('err');return}
+  logs.push({id:Date.now(),date,odo,liters,price});saveLogs();
+  $('l-odo').value='';$('l-liters').value='';$('l-date').value=today();
+  msg.textContent=LT('lHint');msg.classList.remove('err');renderLog();
+});
+document.querySelectorAll('.period').forEach(b=>b.addEventListener('click',()=>{period=+b.dataset.days;try{localStorage.setItem('fuel-period',period)}catch(e){}renderLog()}));
+function applyMode(){
+  const isLog=mode==='log';
+  $('panel-log').classList.toggle('hidden',!isLog);$('result-log').classList.toggle('hidden',!isLog);
+  $('lg-list').classList.toggle('hidden',!isLog);$('reset').classList.toggle('hidden',isLog);
+  renderLog();
+}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',applyMode));
+try{if(localStorage.getItem('fuel-mode')==='log')$('tab-log').click()}catch(e){}
+const _setLang=setLang;
+setLang=function(l){_setLang(l);$('tab-log').textContent=logI18n[l].tabLog;document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=logI18n[l][el.dataset.i18n]});$('l-msg').classList.remove('err');renderLog()};
 $('lang-ru').addEventListener('click',()=>setLang('ru'));$('lang-ua').addEventListener('click',()=>setLang('ua'));setLang(lang);
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

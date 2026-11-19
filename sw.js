@@ -1,4 +1,4 @@
-const CACHE = 'fuel-calc-v2';
+const CACHE = 'fuel-calc-v3';
 const ASSETS = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -13,8 +13,16 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
+// Сначала сеть (чтобы обновления приходили сразу), без сети — из кэша
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request).then(r => {
+      if (r.ok && new URL(e.request.url).origin === location.origin) {
+        const copy = r.clone();
+        caches.open(CACHE).then(c => c.put(e.request, copy));
+      }
+      return r;
+    }).catch(() => caches.match(e.request).then(r => r || caches.match('index.html')))
   );
 });
