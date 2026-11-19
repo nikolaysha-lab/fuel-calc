@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Калькулятор палива</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  .lang-toggle {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    display: flex;
+    gap: 0;
+    z-index: 10;
+  }
+  .lang-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .lang-btn:first-child { border-radius: 6px 0 0 6px; }
+  .lang-btn:last-child { border-radius: 0 6px 6px 0; }
+  .lang-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .app { position: relative; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #ffffff; --text: #1a1d23; --text-secondary: #6b7280;
+    --accent: #2563eb; --accent-light: #dbeafe; --border: #e5e7eb;
+    --result-bg: #0f172a; --result-text: #f8fafc; --result-accent: #38bdf8;
+    --input-bg: #f9fafb; --tab-bg: #e5e7eb; --tab-active: #ffffff;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1117; --surface: #1a1d27; --text: #e8eaed; --text-secondary: #9ca3af;
+      --accent: #60a5fa; --accent-light: #1e3a5f; --border: #2d3240;
+      --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8;
+      --input-bg: #232733; --tab-bg: #232733; --tab-active: #2d3240;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1117; --surface: #1a1d27; --text: #e8eaed; --text-secondary: #9ca3af;
+    --accent: #60a5fa; --accent-light: #1e3a5f; --border: #2d3240;
+    --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8;
+    --input-bg: #232733; --tab-bg: #232733; --tab-active: #2d3240;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+  body { display: flex; flex-direction: column; align-items: center; padding: 16px; padding-top: env(safe-area-inset-top, 16px); padding-bottom: env(safe-area-inset-bottom, 16px); }
+  .app { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
+  header { text-align: center; padding: 12px 0 4px; }
+  header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; padding-right: 60px; }
+  .tabs { display: flex; background: var(--tab-bg); border-radius: 10px; padding: 3px; gap: 3px; }
+  .tab { flex: 1; border: none; background: none; padding: 10px 8px; font-size: 13px; font-weight: 500; font-family: inherit; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: background 0.15s, color 0.15s; line-height: 1.3; }
+  .tab.active { background: var(--tab-active); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; }
+  .field label .icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+  .input-wrap { display: flex; align-items: center; background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
+  .input-wrap:focus-within { border-color: var(--accent); outline: 2px solid var(--accent-light); }
+  .input-wrap input { flex: 1; border: none; background: none; padding: 12px 14px; font-size: 17px; font-weight: 600; font-family: inherit; color: var(--text); font-variant-numeric: tabular-nums; outline: none; min-width: 0; }
+  .input-wrap input::placeholder { color: var(--text-secondary); opacity: 0.5; font-weight: 400; }
+  .input-wrap .unit { padding: 0 14px 0 0; font-size: 14px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; user-select: none; }
+  .result-card { background: var(--result-bg); border-radius: 14px; padding: 24px 20px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+  .result-label { font-size: 13px; font-weight: 500; color: var(--result-accent); text-transform: uppercase; letter-spacing: 0.06em; }
+  .result-value { font-size: 38px; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; transition: opacity 0.15s; }
+  .result-value.empty { opacity: 0.25; }
+  .result-sub { font-size: 13px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .detail-item { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; text-align: center; }
+  .detail-item .val { font-size: 20px; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; }
+  .detail-item .lbl { font-size: 11px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .reset-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; font-family: inherit; color: var(--text-secondary); cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .reset-btn:hover { background: var(--surface); color: var(--text); }
+  .reset-btn:active { transform: scale(0.98); }
+  .hidden { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>x; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; transition: opacity 0.15s; }
+  .result-value.empty { opacity: 0.25; }
+  .result-sub { font-size: 13px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .detail-item { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; text-align: center; }
+  .detail-item .val { font-size: 20px; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; }
+  .detail-item .lbl { font-size: 11px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .reset-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; font-family: inherit; color: var(--text-secondary); cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .reset-btn:hover { background: var(--surface); color: var(--text); }
+  .reset-btn:active { transform: scale(0.98); }
+  .hidden { display: none !important; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header><h1 id="app-title">⛽ Калькулятор палива</h1></header>
+  <div class="lang-toggle">
+    <button class="lang-btn" data-lang="ru" id="lang-ru">RU</button>
+    <button class="lang-btn active" data-lang="ua" id="lang-ua">UA</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="cost" id="tab-cost">💰 Вартість заправки</button>
+    <button class="tab" data-tab="consumption" id="tab-cons">📊 Витрата палива</button>
+  </div>
+  <div class="card" id="panel-cost">
+    <div class="field"><label><span class="icon">💰</span> Ціна за літр</label><div class="input-wrap"><input type="number" id="c-price" inputmode="decimal" step="0.01" placeholder="57.49"><span class="unit">грн/л</span></div></div>
+    <div class="field"><label><span class="icon">🔥</span> Витрата палива</label><div class="input-wrap"><input type="number" id="c-cons" inputmode="decimal" step="0.1" placeholder="7.5"><span class="unit">л/100 км</span></div></div>
+    <div class="field"><label><span class="icon">🛣️</span> Відстань</label><div class="input-wrap"><input type="number" id="c-dist" inputmode="decimal" step="1" placeholder="320"><span class="unit">км</span></div></div>
+  </div>
+  <div class="card hidden" id="panel-cons">
+    <div class="field"><label><span class="icon">⛽</span> Залито в бак</label><div class="input-wrap"><input type="number" id="r-liters" inputmode="decimal" step="0.1" placeholder="42"><span class="unit">літрів</span></div></div>
+    <div class="field"><label><span class="icon">💰</span> Ціна за літр</label><div class="input-wrap"><input type="number" id="r-price" inputmode="decimal" step="0.01" placeholder="56.80"><span class="unit">грн/л</span></div></div>
+    <div class="field"><label><span class="icon">🛣️</span> Пройдено на цьому баку</label><div class="input-wrap"><input type="number" id="r-dist" inputmode="decimal" step="1" placeholder="520"><span class="unit">км</span></div></div>
+  </div>
+  <div class="result-card" id="result-cost">
+    <div class="result-label">Вартість заправки</div>
+    <div class="result-value empty" id="rc-total">— грн</div>
+    <div class="result-sub" id="rc-sub"></div>
+    <div class="details hidden" id="rc-det">
+      <div class="detail-item"><div class="val" id="rc-liters">—</div><div class="lbl">витрачено палива</div></div>
+      <div class="detail-item"><div class="val" id="rc-perkm">—</div><div class="lbl">вартість за 1 км</div></div>
+    </div>
+  </div>
+  <div class="result-card hidden" id="result-cons">
+    <div class="result-label">Витрата палива</div>
+    <div class="result-value empty" id="rr-cons">— л/100 км</div>
+    <div class="result-sub" id="rr-sub"></div>
+    <div class="details hidden" id="rr-det">
+      <div class="detail-item"><div class="val" id="rr-price">—</div><div class="lbl">за заправку</div></div>
+      <div class="detail-item"><div class="val" id="rr-perkm">—</div><div class="lbl">вартість за 1 км</div></div>
+    </div>
+  </div>
+  <button class="reset-btn" id="reset">Скинути</button>
+</div>
+<script>
+const $=id=>document.getElementById(id);let mode='cost';
+document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',()=>{mode=tab.dataset.tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');$('panel-cost').classList.toggle('hidden',mode!=='cost');$('panel-cons').classList.toggle('hidden',mode!=='consumption');$('result-cost').classList.toggle('hidden',mode!=='cost');$('result-cons').classList.toggle('hidden',mode!=='consumption');try{localStorage.setItem('fuel-mode',mode)}catch(e){}});});
+function calcCost(){const p=parseFloat($('c-price').value),c=parseFloat($('c-cons').value),d=parseFloat($('c-dist').value);if(p>0&&c>0&&d>0){const lit=(c/100)*d,cost=lit*p;$('rc-total').textContent=cost.toFixed(2)+' грн';$('rc-total').classList.remove('empty');$('rc-liters').textContent=lit.toFixed(1)+' л';$('rc-perkm').textContent=(cost/d).toFixed(2)+' ₴';$('rc-sub').textContent='';$('rc-det').classList.remove('hidden')}else{$('rc-total').textContent='— грн';$('rc-total').classList.add('empty');$('rc-sub').textContent='';$('rc-det').classList.add('hidden')}save('fuel-cost',{price:$('c-price').value,cons:$('c-cons').value,dist:$('c-dist').value})}
+function calcCons(){const lit=parseFloat($('r-liters').value),ppl=parseFloat($('r-price').value),d=parseFloat($('r-dist').value);if(lit>0&&d>0){const cons=(lit/d)*100;$('rr-cons').textContent=cons.toFixed(1)+' л/100 км';$('rr-cons').classList.remove('empty');$('rr-sub').textContent='';if(ppl>0){const totalCost=lit*ppl;$('rr-price').textContent=totalCost.toFixed(2)+' ₴';$('rr-perkm').textContent=(totalCost/d).toFixed(2)+' ₴';$('rr-det').classList.remove('hidden')}else{$('rr-det').classList.add('hidden')}}else{$('rr-cons').textContent='— л/100 км';$('rr-cons').classList.add('empty');$('rr-sub').textContent='';$('rr-det').classList.add('hidden')}save('fuel-cons',{liters:$('r-liters').value,price:$('r-price').value,dist:$('r-dist').value})}
+function save(key,obj){try{localStorage.setItem(key,JSON.stringify(obj))}catch(e){}}
+try{const sm=localStorage.getItem('fuel-mode');if(sm==='consumption')$('tab-cons').click();const sc=JSON.parse(localStorage.getItem('fuel-cost'));if(sc){if(sc.price)$('c-price').value=sc.price;if(sc.cons)$('c-cons').value=sc.cons;if(sc.dist)$('c-dist').value=sc.dist}const sr=JSON.parse(localStorage.getItem('fuel-cons'));if(sr){if(sr.liters)$('r-liters').value=sr.liters;if(sr.price)$('r-price').value=sr.price;if(sr.dist)$('r-dist').value=sr.dist}}catch(e){}
+['c-price','c-cons','c-dist'].forEach(id=>$(id).addEventListener('input',calcCost));
+['r-liters','r-price','r-dist'].forEach(id=>$(id).addEventListener('input',calcCons));
+$('reset').addEventListener('click',()=>{if(mode==='cost'){['c-price','c-cons','c-dist'].forEach(id=>{$(id).value=''});calcCost();$('c-price').focus()}else{['r-liters','r-price','r-dist'].forEach(id=>{$(id).value=''});calcCons();$('r-liters').focus()}});
+calcCost();calcCons();
+const i18n={ua:{title:'⛽ Калькулятор палива',tabCost:'💰 Вартість заправки',tabCons:'📊 Витрата палива',priceLiter:'Ціна за літр',fuelCons:'Витрата палива',distance:'Відстань',filled:'Залито в бак',pricePerLiter:'Ціна за літр',driven:'Пройдено на цьому баку',costLabel:'Вартість заправки',consLabel:'Витрата палива',spentFuel:'витрачено палива',costPerKm:'вартість за 1 км',totalFuel:'за заправку',reset:'Скинути'},ru:{title:'⛽ Калькулятор топлива',tabCost:'💰 Стоимость заправки',tabCons:'📊 Расход топлива',priceLiter:'Цена за литр',fuelCons:'Расход топлива',distance:'Расстояние',filled:'Залито в бак',pricePerLiter:'Цена за литр',driven:'Пройдено на этом баке',costLabel:'Стоимость заправки',consLabel:'Расход топлива',spentFuel:'потрачено топлива',costPerKm:'стоимость за 1 км',totalFuel:'за заправку',reset:'Сбросить'}};
+let lang='ua';try{lang=localStorage.getItem('fuel-lang')||'ua'}catch(e){}
+function setLang(l){lang=l;try{localStorage.setItem('fuel-lang',l)}catch(e){}const t=i18n[l];$('app-title').textContent=t.title;$('tab-cost').textContent=t.tabCost;$('tab-cons').textContent=t.tabCons;document.querySelector('#panel-cost .field:nth-child(1) label').innerHTML='<span class="icon">💰</span> '+t.priceLiter;document.querySelector('#panel-cost .field:nth-child(2) label').innerHTML='<span class="icon">🔥</span> '+t.fuelCons;document.querySelector('#panel-cost .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.distance;document.querySelector('#panel-cons .field:nth-child(1) label').innerHTML='<span class="icon">⛽</span> '+t.filled;document.querySelector('#panel-cons .field:nth-child(2) label').innerHTML='<span class="icon">💰</span> '+t.pricePerLiter;document.querySelector('#panel-cons .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.driven;document.querySelector('#result-cost .result-label').textContent=t.costLabel;document.querySelector('#result-cons .result-label').textContent=t.consLabel;document.querySelector('#rc-det .detail-item:nth-child(1) .lbl').textContent=t.spentFuel;document.querySelector('#rc-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;document.querySelector('#rr-det .detail-item:nth-child(1) .lbl').textContent=t.totalFuel;document.querySelector('#rr-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;$('reset').textContent=t.reset;$('lang-ru').classList.toggle('active',l==='ru');$('lang-ua').classList.toggle('active',l==='ua')}
+$('lang-ru').addEventListener('click',()=>setLang('ru'));$('lang-ua').addEventListener('click',()=>setLang('ua'));setLang(lang);
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
