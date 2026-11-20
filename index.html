@@ -47,7 +47,7 @@
   :root {
     --bg: #f4f5f7; --surface: #ffffff; --text: #1a1d23; --text-secondary: #6b7280;
     --accent: #2563eb; --accent-light: #dbeafe; --border: #e5e7eb;
-    --result-bg: #0f172a; --result-text: #f8fafc; --result-accent: #38bdf8;
+    --result-bg: #dbeafe; --result-text: #0f172a; --result-accent: #1d4ed8; --tile: rgba(255,255,255,0.7); --tile-active: #ffffff;
     --input-bg: #f9fafb; --tab-bg: #e5e7eb; --tab-active: #ffffff;
     color-scheme: light;
   }
@@ -55,7 +55,7 @@
     :root:not([data-theme="light"]) {
       --bg: #0f1117; --surface: #1a1d27; --text: #e8eaed; --text-secondary: #9ca3af;
       --accent: #60a5fa; --accent-light: #1e3a5f; --border: #2d3240;
-      --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8;
+      --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8; --tile: rgba(255,255,255,0.06); --tile-active: rgba(255,255,255,0.14);
       --input-bg: #232733; --tab-bg: #232733; --tab-active: #2d3240;
       color-scheme: dark;
     }
@@ -63,7 +63,7 @@
   :root[data-theme="dark"] {
     --bg: #0f1117; --surface: #1a1d27; --text: #e8eaed; --text-secondary: #9ca3af;
     --accent: #60a5fa; --accent-light: #1e3a5f; --border: #2d3240;
-    --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8;
+    --result-bg: #172040; --result-text: #f0f6ff; --result-accent: #38bdf8; --tile: rgba(255,255,255,0.06); --tile-active: rgba(255,255,255,0.14);
     --input-bg: #232733; --tab-bg: #232733; --tab-active: #2d3240;
     color-scheme: dark;
   }
@@ -89,11 +89,11 @@
   .result-label { font-size: 13px; font-weight: 500; color: var(--result-accent); text-transform: uppercase; letter-spacing: 0.06em; }
   .result-value { font-size: 38px; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1.1; transition: opacity 0.15s; }
   .result-value.empty { opacity: 0.25; }
-  .result-sub { font-size: 13px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .result-sub { font-size: 13px; color: var(--result-accent); opacity: 0.85; margin-top: 2px; }
   .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-  .detail-item { background: rgba(255,255,255,0.06); border-radius: 10px; padding: 12px; text-align: center; }
+  .detail-item { background: var(--tile); border-radius: 10px; padding: 12px; text-align: center; }
   .detail-item .val { font-size: 20px; font-weight: 700; color: var(--result-text); font-variant-numeric: tabular-nums; }
-  .detail-item .lbl { font-size: 11px; color: var(--result-accent); opacity: 0.7; margin-top: 2px; }
+  .detail-item .lbl { font-size: 11px; color: var(--result-accent); opacity: 0.85; margin-top: 2px; }
   .reset-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 500; font-family: inherit; color: var(--text-secondary); cursor: pointer; transition: background 0.15s, color 0.15s; }
   .reset-btn:hover { background: var(--surface); color: var(--text); }
   .reset-btn:active { transform: scale(0.98); }
@@ -107,9 +107,9 @@
   .hint b { color: var(--text); }
   .hint { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
   .hint.err { color: #dc2626; }
-  .periods { display: flex; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px; gap: 3px; margin-bottom: 6px; }
+  .periods { display: flex; background: var(--tile); border-radius: 8px; padding: 3px; gap: 3px; margin-bottom: 6px; }
   .period { flex: 1; border: none; background: none; color: var(--result-accent); font-family: inherit; font-size: 12px; font-weight: 500; padding: 7px 4px; border-radius: 6px; cursor: pointer; }
-  .period.active { background: rgba(255,255,255,0.14); color: var(--result-text); font-weight: 600; }
+  .period.active { background: var(--tile-active); box-shadow: 0 1px 2px rgba(0,0,0,0.06); color: var(--result-text); font-weight: 600; }
   .log-list { display: flex; flex-direction: column; gap: 8px; }
   .log-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
   .log-item .main { flex: 1; min-width: 0; }
