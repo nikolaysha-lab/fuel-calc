@@ -104,6 +104,7 @@
   .input-wrap input[type="date"] { font-size: 15px; }
   .add-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
   .add-btn:active { transform: scale(0.98); }
+  .hint b { color: var(--text); }
   .hint { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
   .hint.err { color: #dc2626; }
   .periods { display: flex; background: rgba(255,255,255,0.08); border-radius: 8px; padding: 3px; gap: 3px; margin-bottom: 6px; }
@@ -114,6 +115,8 @@
   .log-item .main { flex: 1; min-width: 0; }
   .log-item .top { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .log-item .bot { font-size: 12px; color: var(--text-secondary); margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .log-item .trip { font-size: 12px; color: var(--accent); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .log-item .trip b { font-weight: 700; }
   .del-btn { border: none; background: none; color: var(--text-secondary); font-size: 18px; padding: 6px; cursor: pointer; }
   .list-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; padding: 0 4px; }
   .hidden { display: none !important; }
@@ -208,8 +211,8 @@ let lang='ua';try{lang=localStorage.getItem('fuel-lang')||'ua'}catch(e){}
 function setLang(l){lang=l;try{localStorage.setItem('fuel-lang',l)}catch(e){}const t=i18n[l];$('app-title').textContent=t.title;$('tab-cost').textContent=t.tabCost;$('tab-cons').textContent=t.tabCons;document.querySelector('#panel-cost .field:nth-child(1) label').innerHTML='<span class="icon">💰</span> '+t.priceLiter;document.querySelector('#panel-cost .field:nth-child(2) label').innerHTML='<span class="icon">🔥</span> '+t.fuelCons;document.querySelector('#panel-cost .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.distance;document.querySelector('#panel-cons .field:nth-child(1) label').innerHTML='<span class="icon">⛽</span> '+t.filled;document.querySelector('#panel-cons .field:nth-child(2) label').innerHTML='<span class="icon">💰</span> '+t.pricePerLiter;document.querySelector('#panel-cons .field:nth-child(3) label').innerHTML='<span class="icon">🛣️</span> '+t.driven;document.querySelector('#result-cost .result-label').textContent=t.costLabel;document.querySelector('#result-cons .result-label').textContent=t.consLabel;document.querySelector('#rc-det .detail-item:nth-child(1) .lbl').textContent=t.spentFuel;document.querySelector('#rc-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;document.querySelector('#rr-det .detail-item:nth-child(1) .lbl').textContent=t.totalFuel;document.querySelector('#rr-det .detail-item:nth-child(2) .lbl').textContent=t.costPerKm;$('reset').textContent=t.reset;$('lang-ru').classList.toggle('active',l==='ru');$('lang-ua').classList.toggle('active',l==='ua')}
 /* ===== Журнал заправок ===== */
 const logI18n={
-ua:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробіг (одометр)',lLiters:'Залито',lPrice:'Ціна',lHint:'Точніше рахує, якщо заправлятися до повного бака.',lAdd:'+ Додати заправку',p7:'7 днів',p30:'30 днів',pAll:'Весь час',lPerKm:'Вартість 1 км',lSpent:'витрачено',lKm:'проїхано',lCons:'л/100 км',lAvg:'середня ціна',lHistory:'Історія заправок',needTwo:'Додайте ще одну заправку — тоді з’явиться вартість 1 км',noData:'Немає заправок за цей період',fills:'заправок',errFill:'Заповніть пробіг, літри і ціну',errOdo:'Пробіг менший, ніж у попередній заправці',del:'Видалити цю заправку?'},
-ru:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробег (одометр)',lLiters:'Залито',lPrice:'Цена',lHint:'Точнее считает, если заправляться до полного бака.',lAdd:'+ Добавить заправку',p7:'7 дней',p30:'30 дней',pAll:'Всё время',lPerKm:'Стоимость 1 км',lSpent:'потрачено',lKm:'проехано',lCons:'л/100 км',lAvg:'средняя цена',lHistory:'История заправок',needTwo:'Добавьте ещё одну заправку — тогда появится стоимость 1 км',noData:'Нет заправок за этот период',fills:'заправок',errFill:'Заполните пробег, литры и цену',errOdo:'Пробег меньше, чем в предыдущей заправке',del:'Удалить эту заправку?'}};
+ua:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробіг (одометр)',lLiters:'Залито',lPrice:'Ціна',lHint:'Точніше рахує, якщо заправлятися до повного бака.',lAdd:'+ Додати заправку',p7:'7 днів',p30:'30 днів',pAll:'Весь час',lPerKm:'Вартість 1 км',lSpent:'витрачено',lKm:'проїхано',lCons:'л/100 км',lAvg:'середня ціна',lHistory:'Історія заправок',needTwo:'Додайте ще одну заправку — тоді з’явиться вартість 1 км',noData:'Немає заправок за цей період',fills:'заправок',errFill:'Заповніть пробіг, літри і ціну',errOdo:'Пробіг менший, ніж у попередній заправці',del:'Видалити цю заправку?',lastTrip:'Останній бак',lastNote:'Рахується за ціною попередньої заправки:'},
+ru:{tabLog:'📒 Журнал',lDate:'Дата',lOdo:'Пробег (одометр)',lLiters:'Залито',lPrice:'Цена',lHint:'Точнее считает, если заправляться до полного бака.',lAdd:'+ Добавить заправку',p7:'7 дней',p30:'30 дней',pAll:'Всё время',lPerKm:'Стоимость 1 км',lSpent:'потрачено',lKm:'проехано',lCons:'л/100 км',lAvg:'средняя цена',lHistory:'История заправок',needTwo:'Добавьте ещё одну заправку — тогда появится стоимость 1 км',noData:'Нет заправок за этот период',fills:'заправок',errFill:'Заполните пробег, литры и цену',errOdo:'Пробег меньше, чем в предыдущей заправке',del:'Удалить эту заправку?',lastTrip:'Последний бак',lastNote:'Считается по цене предыдущей заправки:'}};
 const LT=k=>logI18n[lang][k];
 let logs=[];try{logs=JSON.parse(localStorage.getItem('fuel-log'))||[]}catch(e){}
 let period=30;try{const p=localStorage.getItem('fuel-period');if(p!==null)period=+p}catch(e){}
@@ -217,6 +220,7 @@ const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOff
 const fmt=(n,d=2)=>n.toLocaleString('uk-UA',{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmtDate=s=>{const [y,m,d]=s.split('-');return d+'.'+m+'.'+y.slice(2)};
 function saveLogs(){try{localStorage.setItem('fuel-log',JSON.stringify(logs))}catch(e){}}
+function prevPrice(e){const i=logs.indexOf(e);return i>0?logs[i-1].price:e.price}
 function renderLog(){
   logs.sort((a,b)=>a.odo-b.odo);
   document.querySelectorAll('.period').forEach(b=>b.classList.toggle('active',+b.dataset.days===period));
@@ -226,7 +230,7 @@ function renderLog(){
   $('lg-spent').textContent=list.length?fmt(spent,0)+' ₴':'—';
   $('lg-avg').textContent=litAll?fmt(spent/litAll)+' ₴':'—';
   if(list.length>=2){
-    const km=list[list.length-1].odo-list[0].odo,burn=list.slice(1),bl=burn.reduce((s,e)=>s+e.liters,0),bc=burn.reduce((s,e)=>s+e.liters*e.price,0);
+    const km=list[list.length-1].odo-list[0].odo,burn=list.slice(1),bl=burn.reduce((s,e)=>s+e.liters,0),bc=burn.reduce((s,e)=>s+e.liters*prevPrice(e),0);
     if(km>0){$('lg-perkm').textContent=fmt(bc/km)+' ₴';$('lg-perkm').classList.remove('empty');$('lg-km').textContent=fmt(km,0)+' км';$('lg-cons').textContent=fmt(bl/km*100,1);$('lg-sub').textContent=LT('fills')+': '+list.length}
   }else{
     $('lg-perkm').textContent='— ₴';$('lg-perkm').classList.add('empty');$('lg-km').textContent='—';$('lg-cons').textContent='—';
@@ -235,7 +239,7 @@ function renderLog(){
   const box=$('lg-list');box.innerHTML='';
   [...logs].reverse().forEach((e,i,arr)=>{
     const prev=arr[i+1],div=document.createElement('div');div.className='log-item';
-    div.innerHTML='<div class="main"><div class="top">'+fmt(e.liters)+' л × '+fmt(e.price)+' = '+fmt(e.liters*e.price,0)+' ₴</div><div class="bot">'+fmtDate(e.date)+' · '+fmt(e.odo,0)+' км'+(prev?' · +'+fmt(e.odo-prev.odo,0)+' км':'')+'</div></div><button class="del-btn" aria-label="x">✕</button>';
+    div.innerHTML='<div class="main"><div class="top">'+fmt(e.liters)+' л × '+fmt(e.price)+' = '+fmt(e.liters*e.price,0)+' ₴</div><div class="bot">'+fmtDate(e.date)+' · '+fmt(e.odo,0)+' км'+'</div>'+(prev&&e.odo>prev.odo?'<div class="trip">+'+fmt(e.odo-prev.odo,0)+' км · '+fmt(e.liters/(e.odo-prev.odo)*100,1)+' л/100 · <b>'+fmt(e.liters*prev.price/(e.odo-prev.odo))+' ₴/км</b></div>':'')+'</div><button class="del-btn" aria-label="x">✕</button>';
     div.querySelector('.del-btn').onclick=()=>{if(confirm(LT('del'))){logs=logs.filter(x=>x.id!==e.id);saveLogs();renderLog()}};
     box.appendChild(div);
   });
@@ -251,7 +255,7 @@ $('l-add').addEventListener('click',()=>{
   if(odo<=last&&date>=logs.find(e=>e.odo===last).date){msg.textContent=LT('errOdo');msg.classList.add('err');return}
   logs.push({id:Date.now(),date,odo,liters,price});saveLogs();
   $('l-odo').value='';$('l-liters').value='';$('l-date').value=today();
-  msg.textContent=LT('lHint');msg.classList.remove('err');renderLog();
+  msg.classList.remove('err');renderLog();const i=logs.findIndex(x=>x.odo===odo),pv=logs[i-1];if(pv&&odo>pv.odo){const k=odo-pv.odo;msg.innerHTML=LT('lastTrip')+': <b>'+fmt(k,0)+' км · '+fmt(liters/k*100,1)+' л/100 · '+fmt(liters*pv.price/k)+' ₴/км</b><br>'+LT('lastNote')+' '+fmt(pv.price)+' ₴'}else{msg.textContent=LT('lHint')}
 });
 document.querySelectorAll('.period').forEach(b=>b.addEventListener('click',()=>{period=+b.dataset.days;try{localStorage.setItem('fuel-period',period)}catch(e){}renderLog()}));
 function applyMode(){
